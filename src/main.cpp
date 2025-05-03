@@ -3,13 +3,30 @@
 #include <LiquidCrystal_I2C.h>
 #include <BleKeyboard.h>
 
+// Define the pins for the ultrasonic sensor
+// Trigger pin is connected to the ultrasonic sensor's trigger pin
+// Echo pin is connected to the ultrasonic sensor's echo pin
+// The ultrasonic sensor is powered by the ESP32's 5V pin
+// The ultrasonic sensor's ground pin is connected to the ESP32's ground pin
 #define TRIGGER_PIN  12
 #define ECHO_PIN     14
 
+// Maximum distance to measure in cm
+// The ultrasonic sensor can measure distances up to 400 cm, but we set it to 30 cm for this project
 int MAX_DISTANCE = 30;
+// Polling rate for the ultrasonic sensor
+// The ultrasonic sensor is polled every 50 milliseconds
 int POLL_RATE = 50;
+// Polling rate for the detection loop
+// The detection loop is polled every 29 milliseconds
 int DET_POLL_RATE = 29;
 
+// these values can be adjusted to suit your needs
+// skipHoldThreshold: number of detections to trigger skip
+// pauseHoldThreshold: number of detections to trigger pause
+// pauseMaxDistanceThreshold: maximum distance to trigger pause (in cm)
+// prevHoldThreshold: number of detections to trigger previous track
+// prevMaxDistanceThreshold: maximum distance to trigger previous track (in cm)
 int skipHoldThreshold = 9;
 int pauseHoldThreshold = 18;
 int pauseMaxDistanceThreshold = 6;
@@ -35,8 +52,10 @@ void setup() {
 }
 
 void loop() {
+    // get the distance from the ultrasonic sensor
     unsigned int distance = sonar.ping_cm();
 
+    // if the distance is 0, it means no object is detected
     if (distance == 0) {
         delay(POLL_RATE);
         return;
@@ -48,6 +67,8 @@ void loop() {
     unsigned int detections = 0;
     unsigned int minDistance = MAX_DISTANCE;
 
+    // if an object is detected, start the detection loop
+    // the detection loop runs for 1 second and counts the number of detections
     while (millis() - startMillis < 1000) {
         unsigned int newDistance = sonar.ping_cm();
 
